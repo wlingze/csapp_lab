@@ -1,0 +1,12 @@
+str1 = "Border relations with Canada have never been better."
+str2 = "1 2 4 8 16 32"
+str3 = "7 327"
+str4 = "1 0"
+    str4 = "0 0"
+str5 = "ionefg"
+    str5 = "IONEFG" 
+    str5 = "9?>567"
+        characters can be combined as many time as you like
+        as long as they remain in their corresponding positions.
+        e.g. str5="iOn67"
+str6 = "4 3 2 1 6 5"
