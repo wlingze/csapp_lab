@@ -1,0 +1,21 @@
+# test1 -- simple test
+# by lingze
+# sample linked list 
+.pos 0 
+    irmovq stack, %rsp
+    call main 
+    halt
+
+
+.align 8
+array:
+    .quad 0x00d00d00d
+    .quad 0x00c00c00c
+
+main: 
+    irmovq array, %rdi
+    irmovq $4, %rsi 
+    ret
+
+.pos 0x200
+stack:

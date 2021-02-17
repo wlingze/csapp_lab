@@ -1,0 +1,77 @@
+# rsum.ys -- recursive version of sum_list
+# by lingze
+
+# /* rsum_list - Recursive version of sum_list */
+# long rsum_list(list_ptr ls)
+# {
+#     if (!ls)
+#         return 0;
+#     else {
+#         long val = ls->val;
+#         long rest = rsum_list(ls->next);
+#         return val + rest;
+#     }
+# }
+# 
+
+# execution begins at address 0 
+# start: call main
+.pos 0 
+    irmovq stack, %rsp
+    call main 
+    halt
+    
+.align 8
+ele1:
+    .quad 0x00a
+    .quad ele2
+ele2:
+    .quad 0x0b0
+    .quad ele3
+ele3:
+    .quad 0xc00
+    .quad 0
+
+main:
+    irmovq ele1, %rdi
+    call rsum
+    ret
+
+rsum:
+    pushq %rbx
+    xorq %rcx, %rcx
+    xorq %rax, %rax
+
+    subq %rcx, %rdi
+    je lab1
+
+    mrmovq (%rdi), %rbx
+
+    irmovq 8, %rdx
+    addq %rdi, %rdx
+    mrmovq (%rdx), %rdi
+
+    call rsum 
+    addq %rbx, %rax
+
+lab1:
+    popq %rbx
+    ret 
+
+    
+
+# /* rsum_list - Recursive version of sum_list */
+# long rsum_list(list_ptr ls)
+# {
+#     if (!ls)
+#         return 0;
+#     else {
+#         long val = ls->val;
+#         long rest = rsum_list(ls->next);
+#         return val + rest;
+#     }
+# }
+# 
+
+.pos 0x200
+stack:

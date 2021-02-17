@@ -1,0 +1,142 @@
+# copy.ys -- copy src to dest and return xor checksum of src
+# by lingze
+
+# /* copy_block - Copy src to dest and return xor checksum of src */
+# long copy_block(long *src, long *dest, long len)
+# {
+#     long result = 0;
+#     while (len > 0) {
+#         long val = *src++;
+#         *dest++ = val;
+#         result ^= val;
+#         len--;
+#     }
+#     return result;
+# }
+ 
+# execution begins at address 0 
+# start: call main
+.pos 0 
+    irmovq stack, %rsp
+    call main 
+    halt
+    
+.align 8
+src:
+    .quad 0x00a 
+    .quad 0x0b0
+    .quad 0xc00
+
+dest:
+    .quad 0x111
+    .quad 0x222
+    .quad 0x333
+
+main:
+    irmovq src, %rdi
+    irmovq dest, %rsi
+    irmovq 3, %rdx
+    call copy
+
+    irmovq src, %rdi
+    call show
+
+    irmovq dest, %rdi
+    call show
+
+    ret
+
+copy:
+    xorq %rax, %rax
+    xorq %r8, %r8
+    irmovq 1, %r10
+    irmovq 8, %r9
+
+lab1:
+    subq %r8, %rdx
+    je lab2
+
+    mrmovq (%rdi), %rcx
+    addq %r9, %rdi 
+
+    rmmovq %rcx, (%rsi)
+    addq %r9, %rsi 
+
+    xorq %rax, %rcx 
+
+    subq %r10, %rdx
+    jmp lab1
+
+lab2:
+    ret
+
+
+
+    
+# long copy_block(long *src, long *dest, long len)
+# {
+#long *src,     rdi
+#long *dest,    rsi
+#long len       rdx
+#
+#   result      rax
+#
+#   r9 = 1
+#   r8 = 0
+#
+#   val         rcx
+#
+#         rax = 0 
+#
+#   lab1:
+#           rdx - r8 
+#           je lab2
+#
+#         rdi += r9
+#         rcx = (rdi)
+#
+#         rsi += r9
+#         (rsi) = rcx
+#
+#         rax ^= rcx
+#
+#         rdx -= r9
+#         
+#         jmp lab1
+#
+#   lab2:
+#       ret
+# }
+
+# long copy_block(long *src, long *dest, long len)
+# {
+#     long result = 0;
+#     while (len > 0) {
+#         long val = *src++;
+#         *dest++ = val;
+#         result ^= val;
+#         len--;
+#     }
+#     return result;
+# }
+
+show:
+
+    irmovq 8, %r9
+
+    mrmovq (%rdi), %rcx
+    pushq %rcx
+    addq %r9, %rdi 
+
+    mrmovq (%rdi), %rcx
+    pushq %rcx
+    addq %r9, %rdi 
+
+    mrmovq (%rdi), %rcx
+    pushq %rcx
+    addq %r9, %rdi 
+
+    ret
+
+.pos 0x200
+stack:

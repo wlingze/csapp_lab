@@ -1,0 +1,137 @@
+# Score   41.4/60.0
+# rdi: src; 
+# rsi: des; 
+# rdx: len;
+ncopy:
+	xorq %rax,%rax
+
+switch10:
+    iaddq $-10, %rdx 
+    jge loop10
+    iaddq $10, %rdx 
+    je Done
+
+switch2:
+    iaddq $-2, %rdx
+    jge loop2 
+    iaddq $2, %rdx
+    je Done
+
+loop1:
+    mrmovq (%rdi), %r10
+	rmmovq %r10, (%rsi)
+
+judge1_0:
+	andq %r10, %r10
+	jle nop1
+    iaddq $1, %rax
+
+nop1:	
+    iaddq $-1, %rdx
+
+    iaddq $8, %rdi
+    iaddq $8, %rsi
+
+Done:
+	ret
+
+loop2:
+    mrmovq 0x0(%rdi), %r10
+    mrmovq 0x8(%rdi), %r11
+	rmmovq %r10, 0x0(%rsi)
+	rmmovq %r11, 0x8(%rsi)
+
+judge2_0:	
+	andq %r10, %r10
+	jle judge2_1
+    iaddq $1, %rax
+
+judge2_1:	
+	andq %r11, %r11
+	jle nop2
+    iaddq $1, %rax
+
+nop2:
+    iaddq $0x10, %rdi
+    iaddq $0x10, %rsi
+    jmp switch2
+
+loop10: 
+    mrmovq 0x0(%rdi),  %r8
+    mrmovq 0x8(%rdi),  %r9
+    mrmovq 0x10(%rdi), %r10
+    mrmovq 0x18(%rdi), %r11
+    mrmovq 0x20(%rdi), %r12
+    mrmovq 0x28(%rdi), %r13
+    mrmovq 0x30(%rdi), %r14
+    mrmovq 0x38(%rdi), %rbx
+	mrmovq 0x40(%rdi), %rcx
+	mrmovq 0x48(%rdi), %rbp
+
+    rmmovq %r8,  0x0(%rsi)
+    rmmovq %r9,  0x8(%rsi)
+    rmmovq %r10, 0x10(%rsi)
+    rmmovq %r11, 0x18(%rsi)
+    rmmovq %r12, 0x20(%rsi)
+    rmmovq %r13, 0x28(%rsi)
+    rmmovq %r14, 0x30(%rsi)
+    rmmovq %rbx, 0x38(%rsi)
+    rmmovq %rcx, 0x40(%rsi)
+    rmmovq %rbp, 0x48(%rsi)
+
+judge10_0:
+    andq %r8, %r8
+    jle judge10_1 
+    iaddq $1, %rax
+
+judge10_1:
+    andq %r9, %r9
+    jle judge10_2 
+    iaddq $1, %rax
+
+judge10_2:
+    andq %r10, %r10
+    jle judge10_3 
+    iaddq $1, %rax
+
+judge10_3:
+    andq %r11, %r11
+    jle judge10_4
+    iaddq $1, %rax
+
+judge10_4:
+    andq %r12, %r12
+    jle judge10_5
+    iaddq $1, %rax
+
+judge10_5:
+    andq %r13, %r13
+    jle judge10_6
+    iaddq $1, %rax
+
+judge10_6:
+    andq %r14, %r14
+    jle judge10_7
+    iaddq $1, %rax
+
+judge10_7:
+    andq %rbx, %rbx
+    jle judge10_8
+    iaddq $1, %rax
+
+judge10_8:
+    andq %rcx, %rcx
+    jle judge10_9
+    iaddq $1, %rax
+
+judge10_9:
+    andq %rbp, %rbp
+    jle nop10
+    iaddq $1, %rax
+
+nop10:
+    iaddq $0x50, %rdi
+    iaddq $0x50, %rsi
+    jmp switch10
+
+End:

@@ -1,0 +1,116 @@
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len words to dst.
+# Return the number of positive words (>0) contained in src.
+#
+# Include your name and ID here.
+#
+# Describe how and why you modified the baseline code.
+#
+##################################################################
+# Do not modify this portion
+# Function prologue.
+# %rdi = src, %rsi = dst, %rdx = len
+ncopy:
+
+##################################################################
+# You can modify this portion
+	# Loop header
+	xorq %rax,%rax		# count = 0;
+
+while1:
+    iaddq $-8, %rdx
+    jg loop1
+    iaddq $8, %rdx
+#while2:
+    jg loop2
+
+    jmp Done
+
+loop1:
+    mrmovq 0x0(%rdi),  %r8
+    mrmovq 0x8(%rdi),  %r9
+    mrmovq 0x10(%rdi), %r10
+    mrmovq 0x18(%rdi), %r11
+    mrmovq 0x20(%rdi), %r12
+    mrmovq 0x28(%rdi), %r13
+    mrmovq 0x30(%rdi), %r14
+    mrmovq 0x38(%rdi), %rbx
+
+    rmmovq %r8,  0x0(%rsi)
+    rmmovq %r9,  0x8(%rsi)
+    rmmovq %r10, 0x10(%rsi)
+    rmmovq %r11, 0x18(%rsi)
+    rmmovq %r12, 0x20(%rsi)
+    rmmovq %r13, 0x28(%rsi)
+    rmmovq %r14, 0x30(%rsi)
+    rmmovq %rbx, 0x38(%rsi)
+
+judge0:
+    andq %r8, %r8
+    jle judge1 
+    iaddq $1, %rax
+
+judge1:
+    andq %r9, %r9
+    jle judge2 
+    iaddq $1, %rax
+
+judge2:
+    andq %r10, %r10
+    jle judge3 
+    iaddq $1, %rax
+
+judge3:
+    andq %r11, %r11
+    jle judge4
+    iaddq $1, %rax
+
+judge4:
+    andq %r12, %r12
+    jle judge5
+    iaddq $1, %rax
+
+judge5:
+    andq %r13, %r13
+    jle judge6
+    iaddq $1, %rax
+
+judge6:
+    andq %r14, %r14
+    jle judge7
+    iaddq $1, %rax
+
+judge7:
+    andq %rbx, %rbx
+    jle nop1
+    iaddq $1, %rax
+
+nop1:
+    iaddq $0x40, %rdi
+    iaddq $0x40, %rsi
+    jmp while1
+
+
+loop2:	
+    mrmovq (%rdi), %r10	# read val from src...
+	rmmovq %r10, (%rsi)	# ...and store it to dst
+
+	andq %r10, %r10		# val <= 0?
+	jle nop2		# if so, goto Npos:
+    iaddq $1, %rax
+nop2:	
+    iaddq $8, %rdi 
+    iaddq $8, %rsi 
+    iaddq $-1, %rdx
+    jne loop2
+
+##################################################################
+# Do not modify the following section of code
+# Function epilogue.
+Done:
+	ret
+##################################################################
+# Keep the following label at the end of your function
+End:
+#/* $end ncopy-ys */

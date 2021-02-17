@@ -1,0 +1,257 @@
+                            | #######################################################################
+                            | # Test for copying block of size 4;
+                            | #######################################################################
+0x000:                      | 	.pos 0
+0x000: 30f4f004000000000000 | main:	irmovq Stack, %rsp  	# Set up stack pointer
+                            | 
+                            | 	# Set up arguments for copy function and then invoke it
+0x00a: 30f20400000000000000 | 	irmovq $4, %rdx		# src and dst have 4 elements
+0x014: 30f64804000000000000 | 	irmovq dest, %rsi	# dst array
+0x01e: 30f71004000000000000 | 	irmovq src, %rdi	# src array
+0x028: 803200000000000000   | 	call ncopy		 
+0x031: 00                   | 	halt			# should halt with num nonzeros in %rax
+0x032:                      | StartFun:
+                            | # Score   41.4/60.0
+                            | # rdi: src; 
+                            | # rsi: des; 
+                            | # rdx: len;
+0x032:                      | ncopy:
+0x032: 6300                 | 	xorq %rax,%rax
+                            | 
+0x034:                      | switch10:
+0x034: c0f2f6ffffffffffffff |     iaddq $-10, %rdx 
+0x03e: 755202000000000000   |     jge loop10
+0x047: c0f20a00000000000000 |     iaddq $10, %rdx 
+0x051: 73e300000000000000   |     je Done
+                            | 
+                            | 
+0x05a:                      | switch1:
+0x05a: c0f2ffffffffffffffff |     iaddq $-1, %rdx
+                            |     #iaddq $8, %rdx
+0x064: 767f00000000000000   |     jg switch2  
+0x06d: 73a500000000000000   |     je loop1 
+0x076: 72e300000000000000   |     jl Done
+                            | 
+0x07f:                      | switch3: 
+                            |     #iaddq $-3, %rdx 
+                            |     #jge loop3
+                            |     #iaddq $3, %rdx 
+                            |     #je Done
+                            | 
+0x07f:                      | switch2:
+0x07f: c0f2ffffffffffffffff |     iaddq $-1, %rdx
+                            |     #iaddq $8, %rdx
+0x089: 75e400000000000000   |     jge loop2 
+                            |     #je loop2_1
+0x092: c0f20200000000000000 |     iaddq $2, %rdx
+0x09c: 73e300000000000000   |     je Done
+                            | 
+0x0a5:                      | loop1:
+0x0a5: 50a70000000000000000 |     mrmovq (%rdi), %r10
+0x0af: 40a60000000000000000 | 	rmmovq %r10, (%rsi)
+0x0b9: 62aa                 | 	andq %r10, %r10
+0x0bb: 71ce00000000000000   | 	jle nop1
+0x0c4: c0f00100000000000000 |     iaddq $1, %rax
+0x0ce:                      | nop1:	
+0x0ce: c0f70800000000000000 |     iaddq $8, %rdi
+0x0d8: c0f60800000000000000 |     iaddq $8, %rsi
+0x0e2: 90                   |     ret
+                            | 
+0x0e3:                      | Done:
+0x0e3: 90                   | 	ret
+                            | 
+0x0e4:                      | loop2:
+0x0e4: 50a70000000000000000 |     mrmovq 0x0(%rdi), %r10
+0x0ee: 50b70800000000000000 |     mrmovq 0x8(%rdi), %r11
+0x0f8: 40a60000000000000000 | 	rmmovq %r10, 0x0(%rsi)
+0x102: 40b60800000000000000 | 	rmmovq %r11, 0x8(%rsi)
+                            | 
+0x10c:                      | judge2_0:	
+0x10c: 62aa                 | 	andq %r10, %r10
+0x10e: 712101000000000000   | 	jle judge2_1
+0x117: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x121:                      | judge2_1:	
+0x121: 62bb                 | 	andq %r11, %r11
+0x123: 713601000000000000   | 	jle nop2
+0x12c: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x136:                      | nop2:
+0x136: c0f71000000000000000 |     iaddq $0x10, %rdi
+0x140: c0f61000000000000000 |     iaddq $0x10, %rsi
+0x14a: 707f00000000000000   |     jmp switch2
+                            | 
+0x153:                      | loop2_1:
+0x153: 50a70000000000000000 |     mrmovq 0x0(%rdi), %r10
+0x15d: 50b70800000000000000 |     mrmovq 0x8(%rdi), %r11
+0x167: 40a60000000000000000 | 	rmmovq %r10, 0x0(%rsi)
+0x171: 40b60800000000000000 | 	rmmovq %r11, 0x8(%rsi)
+                            | 
+0x17b:                      | judge2_1_0:	
+0x17b: 62aa                 | 	andq %r10, %r10
+0x17d: 719001000000000000   | 	jle judge2_1_1
+0x186: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x190:                      | judge2_1_1:	
+0x190: 62bb                 | 	andq %r11, %r11
+0x192: 71a501000000000000   | 	jle nop2_1
+0x19b: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x1a5:                      | nop2_1:
+0x1a5: c0f71000000000000000 |     iaddq $0x10, %rdi
+0x1af: c0f61000000000000000 |     iaddq $0x10, %rsi
+0x1b9: 90                   |     ret
+                            | 
+                            | 
+0x1ba:                      | loop3:
+0x1ba: 50a70000000000000000 |     mrmovq 0x00(%rdi), %r10
+0x1c4: 50b70800000000000000 |     mrmovq 0x08(%rdi), %r11
+0x1ce: 50c71000000000000000 |     mrmovq 0x10(%rdi), %r12
+0x1d8: 40a60000000000000000 | 	rmmovq %r10, 0x00(%rsi)
+0x1e2: 40b60800000000000000 | 	rmmovq %r11, 0x08(%rsi)
+0x1ec: 40c61000000000000000 | 	rmmovq %r12, 0x10(%rsi)
+                            | 
+0x1f6:                      | judge3_0:	
+0x1f6: 62aa                 | 	andq %r10, %r10
+0x1f8: 710b02000000000000   | 	jle judge3_1
+0x201: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x20b:                      | judge3_1:	
+0x20b: 62bb                 | 	andq %r11, %r11
+0x20d: 712002000000000000   | 	jle judge3_2
+0x216: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x220:                      | judge3_2:	
+0x220: 62cc                 | 	andq %r12, %r12
+0x222: 713601000000000000   | 	jle nop2
+0x22b: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x235:                      | nop3:
+0x235: c0f71800000000000000 |     iaddq $0x18, %rdi
+0x23f: c0f61800000000000000 |     iaddq $0x18, %rsi
+0x249: 707f00000000000000   |     jmp switch3
+                            | 
+                            | 
+0x252:                      | loop10: 
+0x252: 50870000000000000000 |     mrmovq 0x0(%rdi),  %r8
+0x25c: 50970800000000000000 |     mrmovq 0x8(%rdi),  %r9
+0x266: 50a71000000000000000 |     mrmovq 0x10(%rdi), %r10
+0x270: 50b71800000000000000 |     mrmovq 0x18(%rdi), %r11
+0x27a: 50c72000000000000000 |     mrmovq 0x20(%rdi), %r12
+0x284: 50d72800000000000000 |     mrmovq 0x28(%rdi), %r13
+0x28e: 50e73000000000000000 |     mrmovq 0x30(%rdi), %r14
+0x298: 50373800000000000000 |     mrmovq 0x38(%rdi), %rbx
+0x2a2: 50174000000000000000 | 	mrmovq 0x40(%rdi), %rcx
+0x2ac: 50574800000000000000 | 	mrmovq 0x48(%rdi), %rbp
+                            | 
+0x2b6: 40860000000000000000 |     rmmovq %r8,  0x0(%rsi)
+0x2c0: 40960800000000000000 |     rmmovq %r9,  0x8(%rsi)
+0x2ca: 40a61000000000000000 |     rmmovq %r10, 0x10(%rsi)
+0x2d4: 40b61800000000000000 |     rmmovq %r11, 0x18(%rsi)
+0x2de: 40c62000000000000000 |     rmmovq %r12, 0x20(%rsi)
+0x2e8: 40d62800000000000000 |     rmmovq %r13, 0x28(%rsi)
+0x2f2: 40e63000000000000000 |     rmmovq %r14, 0x30(%rsi)
+0x2fc: 40363800000000000000 |     rmmovq %rbx, 0x38(%rsi)
+0x306: 40164000000000000000 |     rmmovq %rcx, 0x40(%rsi)
+0x310: 40564800000000000000 |     rmmovq %rbp, 0x48(%rsi)
+                            | 
+0x31a:                      | judge10_0:
+0x31a: 6288                 |     andq %r8, %r8
+0x31c: 712f03000000000000   |     jle judge10_1 
+0x325: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x32f:                      | judge10_1:
+0x32f: 6299                 |     andq %r9, %r9
+0x331: 714403000000000000   |     jle judge10_2 
+0x33a: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x344:                      | judge10_2:
+0x344: 62aa                 |     andq %r10, %r10
+0x346: 715903000000000000   |     jle judge10_3 
+0x34f: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x359:                      | judge10_3:
+0x359: 62bb                 |     andq %r11, %r11
+0x35b: 716e03000000000000   |     jle judge10_4
+0x364: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x36e:                      | judge10_4:
+0x36e: 62cc                 |     andq %r12, %r12
+0x370: 718303000000000000   |     jle judge10_5
+0x379: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x383:                      | judge10_5:
+0x383: 62dd                 |     andq %r13, %r13
+0x385: 719803000000000000   |     jle judge10_6
+0x38e: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x398:                      | judge10_6:
+0x398: 62ee                 |     andq %r14, %r14
+0x39a: 71ad03000000000000   |     jle judge10_7
+0x3a3: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x3ad:                      | judge10_7:
+0x3ad: 6233                 |     andq %rbx, %rbx
+0x3af: 71c203000000000000   |     jle judge10_8
+0x3b8: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x3c2:                      | judge10_8:
+0x3c2: 6211                 |     andq %rcx, %rcx
+0x3c4: 71d703000000000000   |     jle judge10_9
+0x3cd: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x3d7:                      | judge10_9:
+0x3d7: 6255                 |     andq %rbp, %rbp
+0x3d9: 71ec03000000000000   |     jle nop10
+0x3e2: c0f00100000000000000 |     iaddq $1, %rax
+                            | 
+0x3ec:                      | nop10:
+0x3ec: c0f75000000000000000 |     iaddq $0x50, %rdi
+0x3f6: c0f65000000000000000 |     iaddq $0x50, %rsi
+0x400: 703400000000000000   |     jmp switch10
+                            | 
+0x409:                      | End:
+0x409:                      | EndFun:
+                            | 
+                            | ###############################
+                            | # Source and destination blocks 
+                            | ###############################
+0x410:                      | 	.align 8
+0x410:                      | src:
+0x410: ffffffffffffffff     | 	.quad -1
+0x418: 0200000000000000     | 	.quad 2
+0x420: 0300000000000000     | 	.quad 3
+0x428: fcffffffffffffff     | 	.quad -4
+0x430: fadebc0000000000     | 	.quad 0xbcdefa # This shouldn't get moved
+                            | 
+0x440:                      | 	.align 16
+0x440:                      | Predest:
+0x440: fadebc0000000000     | 	.quad 0xbcdefa
+0x448:                      | dest:
+0x448: abefcd0000000000     | 	.quad 0xcdefab
+0x450: abefcd0000000000     | 	.quad 0xcdefab
+0x458: abefcd0000000000     | 	.quad 0xcdefab
+0x460: abefcd0000000000     | 	.quad 0xcdefab
+0x468:                      | Postdest:
+0x468: bcfade0000000000     | 	.quad 0xdefabc
+                            | 
+0x470:                      | .align 8
+                            | # Run time stack
+0x470: 0000000000000000     | 	.quad 0
+0x478: 0000000000000000     | 	.quad 0
+0x480: 0000000000000000     | 	.quad 0
+0x488: 0000000000000000     | 	.quad 0
+0x490: 0000000000000000     | 	.quad 0
+0x498: 0000000000000000     | 	.quad 0
+0x4a0: 0000000000000000     | 	.quad 0
+0x4a8: 0000000000000000     | 	.quad 0
+0x4b0: 0000000000000000     | 	.quad 0
+0x4b8: 0000000000000000     | 	.quad 0
+0x4c0: 0000000000000000     | 	.quad 0
+0x4c8: 0000000000000000     | 	.quad 0
+0x4d0: 0000000000000000     | 	.quad 0
+0x4d8: 0000000000000000     | 	.quad 0
+0x4e0: 0000000000000000     | 	.quad 0
+0x4e8: 0000000000000000     | 	.quad 0
+                            | 
+0x4f0:                      | Stack:

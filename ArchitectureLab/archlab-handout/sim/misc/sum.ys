@@ -1,0 +1,71 @@
+# sum.ys -- sum the element of a list
+# by lingze
+
+# /* sum_list - Sum the elements of a linked list */
+# long sum_list(list_ptr ls) {
+#     long val = 0;
+#     while (ls) {
+#        val += ls->val;
+#        ls = ls->next;
+#     }
+#     return val;
+# }
+
+
+# execution begins at address 0
+# start: call main
+.pos 0 
+    irmovq stack, %rsp
+    call main 
+    halt
+    
+.align 8
+ele1:
+    .quad 0x00a
+    .quad ele2
+ele2:
+    .quad 0x0b0
+    .quad ele3
+ele3:
+    .quad 0xc00
+    .quad 0
+
+main:
+    irmovq ele1, %rdi
+    call sum
+    ret
+
+sum:
+    xorq %rax, %rax
+    xorq %rcx, %rcx
+loop:
+    mrmovq (%rdi), %rdx
+    addq %rdx, %rax
+
+    irmovq 8, %rdx
+    addq %rdi, %rdx
+    mrmovq (%rdx), %rdx
+
+    rrmovq %rdx, %rdi
+
+    subq %rcx, %rdx
+    jne loop
+
+    ret
+
+# for(val =0; ls !=0; ls=ls->next){
+#     val += ls->val;
+# }
+
+# /* sum_list - Sum the elements of a linked list */
+# long sum_list(list_ptr ls) {
+#     long val = 0;
+#     while (ls) {
+#        val += ls->val;
+#        ls = ls->next;
+#     }
+#     return val;
+# }
+
+.pos 0x200
+stack:
