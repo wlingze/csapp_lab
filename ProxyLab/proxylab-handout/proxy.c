@@ -1,3 +1,4 @@
+#include "cache.h"
 #include "csapp.h"
 #include <stdio.h>
 
@@ -37,6 +38,8 @@ int main(int argc, char *argv[]) {
     exit(0);
   }
 
+  cache_init();
+  printf("init cache!\n");
   listenfd = Open_listenfd(argv[1]);
   clientlen = sizeof(struct sockaddr_storage);
 
@@ -48,6 +51,8 @@ int main(int argc, char *argv[]) {
     printf("Connect to (%s, %s)\n", client_hostname, client_port);
     Pthread_create(&tid, NULL, thread, connfd);
   }
+  cache_free();
+  printf("free cache!\n");
   exit(0);
 }
 
@@ -60,6 +65,10 @@ void proxy(int connfd) {
   do_listen(connfd, uri);
   printf("URI: %s\n", uri);
   strcpy(buf, uri);
+
+  if (cache_read(uri, connfd)) {
+    return;
+  }
 
   parse_clien(buf, host, port, filename);
   printf("Host: %s\n", host);
@@ -112,7 +121,10 @@ void do_proxy(int connfd, int clientfd, char *buf, char *uri) {
   Rio_writen(clientfd, buf, strlen(buf));
   while ((n = Rio_readlineb(&rio, buf, MAXLINE))) {
     Rio_writen(connfd, buf, n);
+    cache_write(uri, buf, n);
+    printf("write cache!\n");
   }
+  print_cache();
 }
 
 void do_listen(int connfd, char *uri) {
