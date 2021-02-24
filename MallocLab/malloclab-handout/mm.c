@@ -98,7 +98,7 @@ team_t team = {
 
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
-#define DEBUG
+/*#define DEBUG*/
 
 #ifdef DEBUG
 #define DPRINT(...) printf(__VA_ARGS__)
@@ -486,16 +486,16 @@ static void *realloc_coalesced(void *tmp, size_t newsize, size_t oldsize) {
 static void *realloc_place(void *tmp, size_t newsize, size_t oldsize) {
 
   // this way will be slow
-  if ((oldsize - newsize) > (2 * DSIZE)) {
-    set_inuse(tmp, newsize);
-    unuse(NEXT(tmp), (oldsize - newsize));
-    mm_link(NEXT(tmp));
-  } else {
-    set_inuse(tmp, oldsize);
-  }
+  /*if ((oldsize - newsize) > (2 * DSIZE)) {*/
+  /*set_inuse(tmp, newsize);*/
+  /*unuse(NEXT(tmp), (oldsize - newsize));*/
+  /*mm_link(NEXT(tmp));*/
+  /*} else {*/
+  /*set_inuse(tmp, oldsize);*/
+  /*}*/
 
   // this way will be fast
-  /*set_inuse(tmp, oldsize);*/
+  set_inuse(tmp, oldsize);
 
   return tmp;
 }
