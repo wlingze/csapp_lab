@@ -19,7 +19,7 @@
 
 #define BINS_SIZE 10
 
-#define WSIZE sizeof(size_t)
+#define WSIZE 8
 #define DSIZE (2 * WSIZE)
 
 #define CHUNK_SIZE (1 << 12)
@@ -98,7 +98,7 @@ team_t team = {
 
 #define SIZE_T_SIZE (ALIGN(sizeof(size_t)))
 
-/*#define DEBUG*/
+#define DEBUG
 
 #ifdef DEBUG
 #define DPRINT(...) printf(__VA_ARGS__)
