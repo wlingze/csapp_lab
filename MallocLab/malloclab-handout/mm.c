@@ -129,9 +129,17 @@ static void check() {
   mm_bins_check();
 }
 
+/*
+ *  insert chunk into linked list.
+ *      ensure that the `seg_bins` pointer always points to the smallest chunk
+ *      into doubly linked list.
+ *
+ */
 static void mm_link(void *p) {
   DPRINT("mm_link (%p)\n", p);
   void *link, *tmp, *bp;
+
+  // get the corresponding index
   size_t index = 0;
   for (int j = GETSIZE(p); (j > 1) && (index < BINS_SIZE + 4);) {
     j >>= 1;
@@ -139,23 +147,36 @@ static void mm_link(void *p) {
   }
   index -= 4;
 
+  // get a pointer to linked list
   link = seg_bins[index];
+
   if ((tmp = bp = link) == NULL) {
-    seg_bins[index] = p;
+    // the current list is empty.
+
     FD(p) = (size_t)p;
     BK(p) = (size_t)p;
+
+    seg_bins[index] = p;
+    return;
+
   } else if (GETSIZE(link) >= GETSIZE(p)) {
-    // new mini
+    // a new minimum chunk is inserted.
+
+    // put it in front of the original header.
     BK(p) = BK(bp);
     BK(bp) = (size_t)p;
     FD(p) = (size_t)bp;
     FD(BK(p)) = (size_t)p;
+
+    // the pointer always points to the smallest chunk.
     seg_bins[index] = p;
 
     return;
   } else if (GETSIZE(BK(link)) <= GETSIZE(p)) {
-    // new max
-    bp = BK(link);
+    // inserted the new largest chunk.
+    //      insert to the end.
+
+    bp = (void *)BK(link);
 
     FD(p) = FD(bp);
     FD(bp) = (size_t)p;
@@ -164,6 +185,10 @@ static void mm_link(void *p) {
 
     return;
   } else {
+    // insert in the middle.
+
+    // traverse from the smallest
+    // to get the first chunk larger than p.
     do {
       if (GETSIZE(tmp) >= GETSIZE(p)) {
         bp = tmp;
@@ -171,24 +196,36 @@ static void mm_link(void *p) {
       }
       tmp = (void *)FD(tmp);
     } while (tmp != link);
+
+    // insert `p` into the BK of this chunk.
     BK(p) = BK(bp);
     BK(bp) = (size_t)p;
     FD(p) = (size_t)bp;
     FD(BK(p)) = (size_t)p;
   }
 }
+
+/*
+ *  remove chunk from linked list.
+ *      if the linked list is empty, the `seg_bins` pointer must be clear.
+ */
 static void mm_unlink(void *p) {
   DPRINT("mm_unlink(%p)\n", p);
   void *link, *tmp;
+
+  // get the corresponding index.
   size_t index = 0;
   for (int j = GETSIZE(p); (j > 1) && (index < BINS_SIZE + 4);) {
     j >>= 1;
     index++;
   }
   index -= 4;
+
   link = seg_bins[index];
 
   if ((FD(p) == (size_t)p) && (BK(p) == (size_t)p) && (link == p)) {
+    // if there is only one chunk,
+    // empty after removal.
     seg_bins[index] = 0;
     FD(p) = 0;
     BK(p) = 0;
@@ -196,9 +233,12 @@ static void mm_unlink(void *p) {
   }
 
   if (link == p) {
+    // if the pointer points to p,
+    // move to the FD(p).
     seg_bins[index] = (void *)FD(link);
   }
 
+  // remove p.
   BK(FD(p)) = BK(p);
   FD(BK(p)) = FD(p);
   FD(p) = 0;
@@ -238,6 +278,15 @@ static void mm_bins_check() {
   return;
 }
 
+/*
+ * preform free heap expansion
+ * the default is 0x1000
+ *
+ *      is called:
+ *          mm_init: initialize a large heap for allocation.
+ *          mm_malloc: the existing free heap block connot satisfy the
+ *                     allocation, allocate a large pile of block.
+ */
 static void *extend_heap(size_t word) {
   DPRINT("extend_heap (%lx)\n", word);
 
@@ -253,6 +302,9 @@ static void *extend_heap(size_t word) {
   return coalesced(bp);
 }
 
+/*
+ * try to merge
+ */
 static void *coalesced(void *p) {
   DPRINT("coalesced(%p)\n", p);
 
@@ -261,37 +313,56 @@ static void *coalesced(void *p) {
   size_t size = GETSIZE((p));
 
   if (prev_use && next_use) {
+    // unable to merge
   } else if (prev_use && (!next_use)) {
+    // merge backwards
     mm_unlink(NEXT(p));
     size += GETSIZE((NEXT(p)));
   } else if ((!prev_use) && next_use) {
+    // merge forward
     mm_unlink(PREV(p));
     size += GETSIZE((PREV(p)));
     p = PREV(p);
   } else if ((!prev_use) && (!next_use)) {
+    // merge forward and backward at the same time
     mm_unlink(PREV(p));
     mm_unlink(NEXT(p));
     size += GETSIZE((PREV(p))) + GETSIZE((NEXT(p)));
     p = PREV(p);
   }
 
+  // at the same time
+  // `mm_link` work is also carried out
   unuse(p, size);
   mm_link(p);
 
   return p;
 }
 
+/*
+ * cut chunk.
+ *
+ */
 static void *place(void *p, size_t size) {
   DPRINT("place(%p, %lx)\n", p, size);
   size_t psize = GETSIZE((p));
   if ((psize - size) < (2 * DSIZE)) {
+    // if the difference is less than the minimum chunk size,
+    // do not cut.
     inuse(p, psize);
-  } else if (size >= 88) {
+  }
+
+  // optimization of `./traces/binary*`
+  else if (size >= 88) {
+    // if it is a lareg chunk,
+    // it will be partially returned after being cut out.
     unuse(p, (psize - size));
     mm_link(p);
     inuse(NEXT(p), size);
     return NEXT(p);
   } else {
+    // if it is a small chunk,
+    // cut out the previous part and return.
     inuse(p, size);
     unuse(NEXT(p), (psize - size));
     mm_link(NEXT(p));
@@ -299,18 +370,28 @@ static void *place(void *p, size_t size) {
   return p;
 }
 
+/*
+ * find whether the free chunk meets the requirements
+ */
 static void *find_fit(size_t size) {
   DPRINT("find_fit(0x%lx)\n", size);
   void *link, *tmp;
+
+  // get the corresponding index
   size_t index = 0;
   for (int j = size; (j > 1) && (index < BINS_SIZE + 4);) {
     j >>= 1;
     index++;
   }
   index -= 4;
+
+  // make a search
   while (1) {
     link = seg_bins[index];
+    //  linked list is not empty
     if (link != NULL) {
+      // if the largest chunk cannot be satisfied,
+      // the next index.
       if (GETSIZE(BK(link)) >= size) {
         tmp = link;
         do {
@@ -350,21 +431,31 @@ int mm_init(void) {
   return 0;
 }
 
+/* malloc function
+ * heap allocation
+ */
 void *mm_malloc(size_t size) {
   DPRINT("mm malloc(0x%lx)\n", size);
   int newsize;
   void *tmp;
 
+  // the heap_list is null,
+  // indicating that it is not initialize
   if (heap_list == NULL) {
     mm_init();
   }
 
+  /*invalid parameter*/
   if (size == 0) {
     return NULL;
   }
 
+  /*memory size => chunk size*/
   newsize = get_newsize(size);
 
+  /*
+   * try to find a suitable one in the free heap block
+   */
   if ((tmp = find_fit(newsize)) != NULL) {
     mm_unlink(tmp);
     tmp = place(tmp, newsize);
@@ -373,6 +464,7 @@ void *mm_malloc(size_t size) {
     return chunk2mem(tmp);
   }
 
+  /*perform free heap expansion */
   size_t extend_size = MAX(newsize, CHUNK_SIZE);
   if ((tmp = extend_heap(extend_size / WSIZE)) == NULL) {
     DPRINT("malloc(0x%x) [%p] failure\n", newsize, tmp);
@@ -390,8 +482,12 @@ void *mm_malloc(size_t size) {
 
 void mm_free(void *ptr) {
   DPRINT("mm_free(%p)\n", ptr);
+
+  /*invalid parameter*/
   if (ptr == 0)
     return;
+
+  /*get the corresponding pointer and size */
   void *tmp = mem2chunk(ptr);
   size_t size = GETSIZE(tmp);
 
